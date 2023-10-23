@@ -230,3 +230,31 @@ OR QuantityPerUnit LIKE '%500 g%';
 SELECT ProductID, ProductName, UnitPrice, UnitPrice * 1.23 AS FinalPrice
 FROM Products
 WHERE CategoryID IN (2, 5);
+
+-- Escreva um comando que apresenta o id, nome, preço unitário, quantidade em stock e valor total do stock (preço unitário * quantidade), atribuindo-lhe o nome “StockValue”, de todos os produtos das categorias 2 e 5.
+SELECT ProductID, ProductName, UnitPrice, UnitsInStock, UnitPrice * UnitsInStock AS StockValue
+FROM Products
+WHERE CategoryID IN (2, 5);
+
+--Escreva um comando que apresente o nome dos fornecedores, a cidade e uma coluna com o título do contacto seguido pelo seu nome, atribuindo-lhe o nome “ContactTitleAndName”, dos fornecedores dos Estados Unidos. Apresente os fornecedores ordenados por cidade.
+SELECT CompanyName AS SupplierName, City, ContactTitle || ' ' || ContactName AS ContactTitleAndName
+FROM Suppliers
+WHERE Country = 'USA'
+ORDER BY City;
+
+-- Determine o número de produtos existentes; 
+SELECT COUNT(*) AS TotalProducts
+FROM Products;
+
+-- Determine quantos produtos são fornecidos por cada fornecedor (supplierid). Ordene os resultados de forma decrescente por número de produtos. 
+SELECT Suppliers.SupplierID, Suppliers.CompanyName, COUNT(Products.ProductID) AS NumProducts
+FROM Suppliers
+JOIN Products ON Suppliers.SupplierID = Products.SupplierID
+GROUP BY Suppliers.SupplierID, Suppliers.CompanyName
+ORDER BY NumProducts DESC;
+
+--Determine quais as categorias (categoryid) que têm 10 ou mais produtos associados;
+SELECT CategoryID
+FROM Products
+GROUP BY CategoryID
+HAVING COUNT(*) >= 10;
