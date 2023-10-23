@@ -221,10 +221,10 @@ AND QuantityPerUnit IN ('200 g', '250 g', '500 g');
 
 SELECT ProductID, ProductName
 FROM Products
-WHERE CategoryID = 8
-AND QuantityPerUnit LIKE '%200 g%'
-OR QuantityPerUnit LIKE '%250 g%'
-OR QuantityPerUnit LIKE '%500 g%';
+WHERE CategoryID = 8 /* cond1 */
+AND QuantityPerUnit LIKE '%200 g%' /* cond2 */
+OR QuantityPerUnit LIKE '%250 g%' /* cond3 */
+OR QuantityPerUnit LIKE '%500 g%'; /* cond4 */
 
 --Escreva um comando que apresenta o id, nome, preço unitário e preço com IVA (23%), atribuindo-lhe o nome “FinalPrice”, dos produtos das categorias 2 e 5.
 SELECT ProductID, ProductName, UnitPrice, UnitPrice * 1.23 AS FinalPrice
@@ -254,7 +254,7 @@ GROUP BY Suppliers.SupplierID, Suppliers.CompanyName
 ORDER BY NumProducts DESC;
 
 --Determine quais as categorias (categoryid) que têm 10 ou mais produtos associados;
-SELECT CategoryID
-FROM Products
-GROUP BY CategoryID
-HAVING COUNT(*) >= 10;
+SELECT CategoryID -- select the CategoryID column
+FROM Products -- select from the Products table
+GROUP BY CategoryID -- group the results by CategoryID
+HAVING COUNT(*) >= 10; -- only return results where the count of rows is 10 or more
