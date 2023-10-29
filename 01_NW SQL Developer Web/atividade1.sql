@@ -247,14 +247,82 @@ SELECT COUNT(*) AS TotalProducts
 FROM Products;
 
 -- Determine quantos produtos são fornecidos por cada fornecedor (supplierid). Ordene os resultados de forma decrescente por número de produtos. 
-SELECT Suppliers.SupplierID, Suppliers.CompanyName, COUNT(Products.ProductID) AS NumProducts
+SELECT Suppliers.SupplierID, Suppliers.CompanyName, COUNT(Products.ProductID) AS NumProducts -- Count the number of products for each supplier
 FROM Suppliers
 JOIN Products ON Suppliers.SupplierID = Products.SupplierID
 GROUP BY Suppliers.SupplierID, Suppliers.CompanyName
-ORDER BY NumProducts DESC;
+ORDER BY NumProducts DESC; -- Sort from most to least number of products
 
 --Determine quais as categorias (categoryid) que têm 10 ou mais produtos associados;
-SELECT CategoryID -- select the CategoryID column
-FROM Products -- select from the Products table
-GROUP BY CategoryID -- group the results by CategoryID
-HAVING COUNT(*) >= 10; -- only return results where the count of rows is 10 or more
+SELECT CategoryID, CategoryName 
+FROM Categories
+WHERE CategoryID IN (SELECT CategoryID
+                     FROM Products
+                     GROUP BY CategoryID
+                     HAVING COUNT(*) >= 10);
+
+-- Determine os Ids das ordens de compra que têm mais de 5 produtos diferentes associados
+SELECT OrderID, NumProducts
+FROM (
+  SELECT OrderID, COUNT(DISTINCT ProductID) AS NumProducts
+  FROM OrderDetails
+  GROUP BY OrderID
+  HAVING COUNT(DISTINCT ProductID) > 5
+) subquery;
+
+
+--Apresente os nomes dos produtos, o nome da categoria e o nome e a cidade das empresas fornecedoras da França ordenando os resultados por cidade e por nome de empresa.
+SELECT Products.ProductName, Categories.CategoryName, Suppliers.CompanyName, Suppliers.City
+FROM Products
+JOIN Categories ON Products.CategoryID = Categories.CategoryID
+JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID
+WHERE Suppliers.Country = 'France'
+ORDER BY Suppliers.City, Suppliers.CompanyName;
+
+-- Apresente uma listagem com a quantidade de produtos diferentes presentes em cada ordem de compra realizadas para clientes da Noruega (Norway).
+SELECT Orders.OrderID, COUNT(DISTINCT ProductID) AS NumProducts, Customers.Country
+FROM Orders
+JOIN Customers ON Orders.CustomerID = Customers.CustomerID
+JOIN OrderDetails ON Orders.OrderID = OrderDetails.OrderID
+WHERE Customers.Country = 'Norway'
+GROUP BY Orders.OrderID, Customers.Country;
+
+
+--Quantos empregados existem em cada país/cidade? Ordene os resultados por país e cidade
+SELECT Country, City, COUNT(*) AS NumEmployees
+FROM Employees
+GROUP BY Country, City
+ORDER BY Country, City;
+
+--Liste os produtos (id e nome), cuja quantidade média de encomenda em 1997 é superior a 30 unidades. 
+--Mostre no resultado o valor da média e o número de vezes que o produto foi encomendado. Ordene por ordem decrescente do valor da média de unidades encomendadas
+
+SELECT Products.ProductID, Products.ProductName, AVG(OrderDetails.Quantity) AS AvgQuantity, COUNT(OrderDetails.OrderID) AS NumOrders
+FROM Products
+JOIN OrderDetails ON Products.ProductID = OrderDetails.ProductID
+JOIN Orders ON OrderDetails.OrderID = Orders.OrderID
+WHERE Orders.OrderDate BETWEEN TO_DATE('1997-01-01', 'YYYY-MM-DD') AND TO_DATE('1997-12-31', 'YYYY-MM-DD')
+GROUP BY Products.ProductID, Products.ProductName
+HAVING AVG(OrderDetails.Quantity) > 30
+ORDER BY AvgQuantity DESC;
+
+
+--Quantas vezes é que um produto foi vendido sendo que comprador, vendedor e fornecedor eram do mesmo país? 
+SELECT COUNT(*) AS NumSales
+FROM Orders o
+JOIN OrderDetails od ON o.OrderID = od.OrderID
+JOIN Customers c ON o.CustomerID = c.CustomerID
+JOIN Employees e ON o.EmployeeID = e.EmployeeID
+JOIN Shippers s ON o.ShipVia = s.ShipperID
+JOIN Products p ON od.ProductID = p.ProductID
+JOIN Suppliers sup ON p.SupplierID = sup.SupplierID
+WHERE c.Country = e.Country
+AND c.Country = sup.Country
+AND e.Country = sup.Country
+
+--Quais os clientes que ainda não fizeram encomendas?
+SELECT CustomerID, CompanyName
+FROM Customers
+WHERE CustomerID NOT IN (SELECT CustomerID
+                         FROM Orders);
+                        
